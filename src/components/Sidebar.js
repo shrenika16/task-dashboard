@@ -1,8 +1,15 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "../styles/dashboard.css";
 
 function Sidebar() {
+
+const navigate = useNavigate();
+
+const handleLogout = () => {
+localStorage.removeItem("user");
+navigate("/");
+};
 
 return(
 
@@ -21,7 +28,7 @@ return(
 </li>
 
 <li>
-<Link to="/">Logout</Link>
+<button onClick={handleLogout}>Logout</button>
 </li>
 
 </ul>
@@ -32,4 +39,4 @@ return(
 
 }
 
-export default Sidebar
+export default Sidebar;

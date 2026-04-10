@@ -1,4 +1,5 @@
 import React,{useState,useEffect} from "react"
+import Sidebar from "../components/Sidebar"
 import TaskCard from "../components/TaskCard"
 
 function Tasks(){
@@ -31,7 +32,11 @@ localStorage.setItem("tasks",JSON.stringify(newTasks))
 
 return(
 
-<div>
+<div className="dashboard">
+
+<Sidebar/>
+
+<div className="main">
 
 <button onClick={addTask}>Add Task</button>
 
@@ -48,8 +53,10 @@ status={t.status}
 
 </div>
 
+</div>
+
 )
 
 }
 
-export default Tasks
+export default Tasks;
