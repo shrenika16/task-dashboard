@@ -6,7 +6,7 @@ function Login(){
 
 const navigate = useNavigate();
 
-const handleLogin=(e)=>{
+const handleLogin = (e)=>{
 e.preventDefault();
 
 localStorage.setItem("user","loggedIn");
@@ -20,20 +20,21 @@ return(
 
 <div className="box">
 
-<h2>Login</h2>
+<h2>Welcome Back</h2>
+<p className="subtitle">Login to your account</p>
 
 <form onSubmit={handleLogin}>
 
-<input type="email" placeholder="Email" required/>
+<input type="email" placeholder="Enter Email" required/>
 
-<input type="password" placeholder="Password" required/>
+<input type="password" placeholder="Enter Password" required/>
 
 <button type="submit">Login</button>
 
 </form>
 
-<p>
-Don't have account?
+<p className="switchText">
+Don't have an account?
 <Link to="/register"> Register</Link>
 </p>
 

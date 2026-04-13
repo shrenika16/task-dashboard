@@ -1,5 +1,4 @@
 import React from "react";
-import "../styles/task.css";
 
 function TaskCard({title,desc,status}){
 
@@ -11,7 +10,9 @@ return(
 
 <p>{desc}</p>
 
-<p>Status: {status}</p>
+<span className={`status ${status==="Completed"?"completed":"pending"}`}>
+{status}
+</span>
 
 </div>
 
@@ -19,4 +20,4 @@ return(
 
 }
 
-export default TaskCard;
+export default TaskCard

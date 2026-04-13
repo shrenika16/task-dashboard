@@ -1,16 +1,23 @@
+body{
+margin:0;
+font-family:'Segoe UI', sans-serif;
+background:#f4f6fb;
+}
+
+/* Layout */
+
 .dashboard{
 display:flex;
-height:100vh;
-font-family:Arial;
 }
 
 /* Sidebar */
 
 .sidebar{
 width:220px;
-background:#333;
+background:#1f2937;
 color:white;
 padding:20px;
+min-height:100vh;
 }
 
 .sidebar h3{
@@ -30,24 +37,38 @@ margin:15px 0;
 color:white;
 text-decoration:none;
 font-size:16px;
+display:block;
+padding:8px;
+border-radius:6px;
 }
 
 .sidebar a:hover{
-text-decoration:underline;
+background:#334155;
 }
 
-/* Main Content */
+.sidebar button{
+background:none;
+border:none;
+color:white;
+font-size:16px;
+cursor:pointer;
+margin-top:20px;
+}
+
+/* Main */
 
 .main{
 flex:1;
-padding:30px;
-background:#f4f4f4;
+padding:40px;
 }
 
-/* Welcome Section */
+/* Title */
 
-.welcome{
-margin-bottom:30px;
+.dashboardTitle{
+font-size:28px;
+font-weight:600;
+margin-bottom:25px;
+color:#1f2937;
 }
 
 /* Cards */
@@ -57,22 +78,43 @@ display:flex;
 gap:20px;
 }
 
+/* Card */
+
 .card{
-background:white;
-padding:20px;
-border-radius:8px;
-box-shadow:0 0 10px rgba(0,0,0,0.1);
 flex:1;
-text-align:center;
-}
-.sidebar button{
-background:none;
-border:none;
+padding:25px;
+border-radius:12px;
 color:white;
-font-size:16px;
+text-align:center;
+font-size:18px;
+font-weight:500;
+box-shadow:0 6px 15px rgba(0,0,0,0.15);
+transition:0.3s;
 cursor:pointer;
 }
 
-.sidebar button:hover{
-text-decoration:underline;
+.card:hover{
+transform:translateY(-6px);
+}
+
+/* Numbers */
+
+.card p{
+font-size:28px;
+font-weight:bold;
+margin-top:10px;
+}
+
+/* Card Colors */
+
+.total{
+background:linear-gradient(135deg,#ff9a44,#ff6a00);
+}
+
+.completed{
+background:linear-gradient(135deg,#00b09b,#96c93d);
+}
+
+.pending{
+background:linear-gradient(135deg,#ff416c,#ff4b2b);
 }

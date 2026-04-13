@@ -1,54 +1,109 @@
 body{
 margin:0;
-font-family:Arial;
+font-family:'Segoe UI',sans-serif;
+background:linear-gradient(120deg,#667eea,#764ba2,#6b8cff);
+background-size:300% 300%;
+height:100vh;
 }
+
+/* Center container */
 
 .container{
 height:100vh;
 display:flex;
 justify-content:center;
 align-items:center;
-background:#f4f4f4;
 }
+
+/* Form box */
 
 .box{
-width:350px;
-padding:30px;
+width:380px;
+padding:35px;
 background:white;
-border-radius:8px;
-box-shadow:0 0 10px rgba(0,0,0,0.1);
+border-radius:14px;
+box-shadow:0 15px 35px rgba(0,0,0,0.2);
+text-align:center;
+transition:0.3s;
 }
 
-.box h2{
-text-align:center;
+.box:hover{
+transform:translateY(-5px);
 }
+
+/* Title */
+
+.box h2{
+margin-bottom:5px;
+color:#333;
+}
+
+/* Subtitle */
+
+.subtitle{
+font-size:14px;
+color:#777;
+margin-bottom:20px;
+}
+
+/* Inputs */
 
 .box input{
 width:100%;
-padding:10px;
+padding:12px;
 margin:10px 0;
-border:1px solid #ccc;
+border:1px solid #ddd;
+border-radius:8px;
+outline:none;
+font-size:14px;
+transition:0.3s;
 }
+
+.box input:focus{
+border-color:#667eea;
+box-shadow:0 0 8px rgba(102,126,234,0.4);
+}
+
+/* Button */
 
 button{
 width:100%;
-padding:10px;
-background:#007bff;
+padding:12px;
+background:linear-gradient(135deg,#667eea,#764ba2);
 color:white;
 border:none;
+border-radius:8px;
+cursor:pointer;
+font-size:16px;
+margin-top:10px;
 }
 
 button:hover{
-background:#0056b3;
+background:#5a67d8;
+transform:scale(1.02);
 }
 
-p{
-text-align:center;
+/* Text */
+
+.switchText{
+margin-top:15px;
+font-size:14px;
 }
+
+a{
+color:#667eea;
+text-decoration:none;
+font-weight:500;
+}
+
+a:hover{
+text-decoration:underline;
+}
+
+/* Error */
 
 .error{
 color:red;
-font-size:14px;
-margin-top:-5px;
-margin-bottom:10px;
+font-size:13px;
+margin-top:5px;
 }

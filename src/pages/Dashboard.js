@@ -4,6 +4,10 @@ import "../styles/dashboard.css";
 
 function Dashboard(){
 
+const totalTasks = 10;
+const completedTasks = 4;
+const pendingTasks = 6;
+
 return(
 
 <div className="dashboard">
@@ -12,25 +16,23 @@ return(
 
 <div className="main">
 
-<div className="welcome">
-<h2>Welcome to Dashboard</h2>
-</div>
+<h2 className="dashboardTitle">Dashboard</h2>
 
 <div className="cards">
 
-<div className="card">
+<div className="card total">
 <h3>Total Tasks</h3>
-<p>10</p>
+<p>{totalTasks}</p>
 </div>
 
-<div className="card">
-<h3>Completed</h3>
-<p>5</p>
+<div className="card completed">
+<h3>Completed Tasks</h3>
+<p>{completedTasks}</p>
 </div>
 
-<div className="card">
-<h3>Pending</h3>
-<p>5</p>
+<div className="card pending">
+<h3>Pending Tasks</h3>
+<p>{pendingTasks}</p>
 </div>
 
 </div>
@@ -43,4 +45,4 @@ return(
 
 }
 
-export default Dashboard
+export default Dashboard;

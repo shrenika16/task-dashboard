@@ -1,34 +1,15 @@
-import React,{useState,useEffect} from "react"
-import Sidebar from "../components/Sidebar"
-import TaskCard from "../components/TaskCard"
+import React from "react";
+import Sidebar from "../components/Sidebar";
+import TaskCard from "../components/TaskCard";
+import "../styles/task.css";
 
 function Tasks(){
 
-const [tasks,setTasks]=useState([])
-
-useEffect(()=>{
-
-const savedTasks = localStorage.getItem("tasks")
-
-if(savedTasks){
-setTasks(JSON.parse(savedTasks))
-}
-
-},[])
-
-const addTask=()=>{
-
-const newTasks=[...tasks,{
-title:"New Task",
-desc:"Task description",
-status:"Pending"
-}]
-
-setTasks(newTasks)
-
-localStorage.setItem("tasks",JSON.stringify(newTasks))
-
-}
+const tasks=[
+{title:"Complete UI",desc:"Finish dashboard design",status:"Pending"},
+{title:"Fix Login",desc:"Fix login bug",status:"Completed"},
+{title:"Add Modal",desc:"Add task modal popup",status:"Pending"}
+]
 
 return(
 
@@ -38,18 +19,22 @@ return(
 
 <div className="main">
 
-<button onClick={addTask}>Add Task</button>
+<h2 className="taskTitle">Tasks</h2>
 
-{tasks.map((t,i)=>(
+<button className="addBtn">+ Add Task</button>
 
+<div className="taskGrid">
+
+{tasks.map((task,index)=>(
 <TaskCard
-key={i}
-title={t.title}
-desc={t.desc}
-status={t.status}
+key={index}
+title={task.title}
+desc={task.desc}
+status={task.status}
 />
-
 ))}
+
+</div>
 
 </div>
 
@@ -59,4 +44,4 @@ status={t.status}
 
 }
 
-export default Tasks;
+export default Tasks

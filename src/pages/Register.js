@@ -10,24 +10,25 @@ return(
 
 <div className="box">
 
-<h2>Register</h2>
+<h2>Create Account</h2>
+<p className="subtitle">Register to start managing your tasks</p>
 
 <form>
 
-<input type="text" placeholder="Full Name" />
+<input type="text" placeholder="Enter Full Name" required/>
 
-<input type="email" placeholder="Email" />
+<input type="email" placeholder="Enter Email" required/>
 
-<input type="password" placeholder="Password" />
+<input type="password" placeholder="Enter Password" required/>
 
-<input type="password" placeholder="Confirm Password" />
+<input type="password" placeholder="Confirm Password" required/>
 
-<button>Register</button>
+<button type="submit">Register</button>
 
 </form>
 
-<p>
-Already have account?
+<p className="switchText">
+Already have an account?
 <Link to="/"> Login</Link>
 </p>
 
@@ -39,4 +40,4 @@ Already have account?
 
 }
 
-export default Register
+export default Register;
