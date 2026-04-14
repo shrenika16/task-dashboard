@@ -1,21 +1,47 @@
-let tasks = [
-{title:"Learn React",status:"Pending"},
-{title:"Build Dashboard",status:"Completed"}
-];
+const Task = require("../models/TaskModel");
 
-exports.getTasks = (req,res)=>{
+// Get all tasks
+exports.getTasks = async (req,res)=>{
+
+try{
+
+const tasks = await Task.find();
+
 res.json(tasks);
+
+}catch(error){
+
+res.status(500).json({message:error.message});
+
+}
+
 };
 
-exports.addTask = (req,res)=>{
 
-const task = req.body;
+// Add new task
+exports.addTask = async (req,res)=>{
 
-tasks.push(task);
+try{
+
+const newTask = new Task({
+
+title:req.body.title,
+description:req.body.description,
+status:req.body.status
+
+});
+
+const savedTask = await newTask.save();
 
 res.json({
 message:"Task added",
-task
+task:savedTask
 });
+
+}catch(error){
+
+res.status(500).json({message:error.message});
+
+}
 
 };
