@@ -1,6 +1,6 @@
 const Task = require("../models/TaskModel");
 
-// Get all tasks
+// GET /tasks
 exports.getTasks = async (req,res)=>{
 
 try{
@@ -18,7 +18,7 @@ res.status(500).json({message:error.message});
 };
 
 
-// Add new task
+// POST /tasks
 exports.addTask = async (req,res)=>{
 
 try{
