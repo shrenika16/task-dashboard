@@ -1,20 +1,20 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const cors = require("cors");
 
 const taskRoutes = require("./routes/taskRoutes");
 
 const app = express();
-const PORT = 5000;
 
+app.use(cors());
 app.use(express.json());
 
-app.use("/tasks", taskRoutes);
+app.use("/tasks",taskRoutes);
 
 mongoose.connect("mongodb://127.0.0.1:27017/taskdb")
-.then(()=>{
-    console.log("MongoDB connected");
-    app.listen(PORT,()=>{
-        console.log(`Server running on port ${PORT}`);
-    });
-})
+.then(()=>console.log("MongoDB connected"))
 .catch(err=>console.log(err));
+
+app.listen(5000,()=>{
+console.log("Server running on port 5000");
+});
