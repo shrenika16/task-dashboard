@@ -9,7 +9,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.use("/tasks",taskRoutes);
+app.use("/tasks", taskRoutes);
 
 mongoose.connect("mongodb://127.0.0.1:27017/taskdb")
 .then(()=>console.log("MongoDB connected"))

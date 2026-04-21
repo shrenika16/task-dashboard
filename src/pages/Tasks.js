@@ -21,6 +21,7 @@ fetch("http://localhost:5000/tasks")
 
 },[]);
 
+
 // Add task using POST API
 const addTask = async () => {
 
@@ -54,6 +55,43 @@ setStatus("Pending");
 setLoading(false);
 
 };
+
+
+// Update Task Status
+const updateTaskStatus = async (task) => {
+
+const newStatus = task.status === "Pending" ? "Completed" : "Pending";
+
+const response = await fetch(`http://localhost:5000/tasks/${task._id}`,{
+method:"PUT",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+status:newStatus
+})
+});
+
+const data = await response.json();
+
+setTasks(tasks.map(t =>
+t._id === task._id ? data.task : t
+));
+
+};
+
+
+// Delete Task
+const deleteTask = async (id) => {
+
+await fetch(`http://localhost:5000/tasks/${id}`,{
+method:"DELETE"
+});
+
+setTasks(tasks.filter(task => task._id !== id));
+
+};
+
 
 return(
 
@@ -103,6 +141,8 @@ key={task._id}
 title={task.title}
 desc={task.description}
 status={task.status}
+updateTaskStatus={()=>updateTaskStatus(task)}
+deleteTask={()=>deleteTask(task._id)}
 />
 ))}
 

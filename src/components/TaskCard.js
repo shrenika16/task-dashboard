@@ -1,6 +1,6 @@
 import React from "react";
 
-function TaskCard({title,desc,status}){
+function TaskCard({title,desc,status,updateTaskStatus,deleteTask}){
 
 return(
 
@@ -13,6 +13,18 @@ return(
 <span className={`status ${status==="Completed"?"completed":"pending"}`}>
 {status}
 </span>
+
+<div className="taskActions">
+
+<button onClick={updateTaskStatus}>
+Update
+</button>
+
+<button onClick={deleteTask}>
+Delete
+</button>
+
+</div>
 
 </div>
 
