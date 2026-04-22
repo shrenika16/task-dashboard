@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 
 const taskRoutes = require("./routes/taskRoutes");
+const authRoutes = require("./routes/authRoutes");
 
 const app = express();
 
@@ -10,6 +11,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/tasks", taskRoutes);
+app.use("/auth", authRoutes);
 
 mongoose.connect("mongodb://127.0.0.1:27017/taskdb")
 .then(()=>console.log("MongoDB connected"))
