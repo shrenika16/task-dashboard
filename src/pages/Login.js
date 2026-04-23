@@ -1,18 +1,41 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/auth.css";
 
 function Login(){
 
+const [email,setEmail] = useState("");
+const [password,setPassword] = useState("");
+
 const navigate = useNavigate();
 
-const handleLogin = (e)=>{
+const loginUser = async (e) => {
+
 e.preventDefault();
 
-localStorage.setItem("user","loggedIn");
+const response = await fetch("http://localhost:5000/auth/login",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+email,
+password
+})
+});
 
+const data = await response.json();
+
+if(response.ok){
+alert("Hi " + data.name);
+localStorage.setItem("user",data.name);
 navigate("/dashboard");
 }
+else{
+alert(data.message);
+}
+
+};
 
 return(
 
@@ -23,11 +46,23 @@ return(
 <h2>Welcome Back</h2>
 <p className="subtitle">Login to your account</p>
 
-<form onSubmit={handleLogin}>
+<form onSubmit={loginUser}>
 
-<input type="email" placeholder="Enter Email" required/>
+<input
+type="email"
+placeholder="Enter Email"
+value={email}
+onChange={(e)=>setEmail(e.target.value)}
+required
+/>
 
-<input type="password" placeholder="Enter Password" required/>
+<input
+type="password"
+placeholder="Enter Password"
+value={password}
+onChange={(e)=>setPassword(e.target.value)}
+required
+/>
 
 <button type="submit">Login</button>
 
