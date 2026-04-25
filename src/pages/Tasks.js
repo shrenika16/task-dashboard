@@ -14,7 +14,11 @@ const [loading,setLoading] = useState(false);
 // Fetch tasks from backend
 useEffect(()=>{
 
-fetch("http://localhost:5000/tasks")
+fetch("http://localhost:5000/tasks",{
+headers:{
+Authorization: localStorage.getItem("token")
+}
+})
 .then(res => res.json())
 .then(data => setTasks(data))
 .catch(err => console.log(err));
@@ -35,7 +39,8 @@ setLoading(true);
 const response = await fetch("http://localhost:5000/tasks",{
 method:"POST",
 headers:{
-"Content-Type":"application/json"
+"Content-Type":"application/json",
+Authorization: localStorage.getItem("token")
 },
 body:JSON.stringify({
 title,
@@ -65,7 +70,8 @@ const newStatus = task.status === "Pending" ? "Completed" : "Pending";
 const response = await fetch(`http://localhost:5000/tasks/${task._id}`,{
 method:"PUT",
 headers:{
-"Content-Type":"application/json"
+"Content-Type":"application/json",
+Authorization: localStorage.getItem("token")
 },
 body:JSON.stringify({
 status:newStatus
@@ -85,7 +91,10 @@ t._id === task._id ? data.task : t
 const deleteTask = async (id) => {
 
 await fetch(`http://localhost:5000/tasks/${id}`,{
-method:"DELETE"
+method:"DELETE",
+headers:{
+Authorization: localStorage.getItem("token")
+}
 });
 
 setTasks(tasks.filter(task => task._id !== id));

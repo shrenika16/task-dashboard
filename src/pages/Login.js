@@ -29,6 +29,7 @@ const data = await response.json();
 if(response.ok){
 alert("Hi " + data.name);
 localStorage.setItem("user",data.name);
+localStorage.setItem("token", data.token);
 navigate("/dashboard");
 }
 else{
