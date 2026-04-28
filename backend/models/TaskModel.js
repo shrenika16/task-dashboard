@@ -16,6 +16,12 @@ enum:["Pending","Completed"],
 default:"Pending"
 },
 
+userId:{
+type: mongoose.Schema.Types.ObjectId,
+ref:"User",
+required:true
+},
+
 createdAt:{
 type:Date,
 default:Date.now

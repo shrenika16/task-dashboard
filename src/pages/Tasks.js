@@ -2,8 +2,11 @@ import React, { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import TaskCard from "../components/TaskCard";
 import "../styles/task.css";
+import { useNavigate } from "react-router-dom";
 
 function Tasks(){
+
+const navigate = useNavigate();
 
 const [tasks,setTasks] = useState([]);
 const [title,setTitle] = useState("");
@@ -11,22 +14,28 @@ const [description,setDescription] = useState("");
 const [status,setStatus] = useState("Pending");
 const [loading,setLoading] = useState(false);
 
-// Fetch tasks from backend
 useEffect(()=>{
+
+const token = localStorage.getItem("token");
+
+if(!token){
+navigate("/");
+return;
+}
 
 fetch("http://localhost:5000/tasks",{
 headers:{
-Authorization: localStorage.getItem("token")
+Authorization: token
 }
 })
 .then(res => res.json())
 .then(data => setTasks(data))
 .catch(err => console.log(err));
 
-},[]);
+},[navigate]);
 
 
-// Add task using POST API
+// Add Task
 const addTask = async () => {
 
 if(!title || !description){
@@ -62,12 +71,17 @@ setLoading(false);
 };
 
 
-// Update Task Status
+// Update Task
 const updateTaskStatus = async (task) => {
 
-const newStatus = task.status === "Pending" ? "Completed" : "Pending";
+const newStatus =
+task.status === "Pending"
+? "Completed"
+: "Pending";
 
-const response = await fetch(`http://localhost:5000/tasks/${task._id}`,{
+const response = await fetch(
+`http://localhost:5000/tasks/${task._id}`,
+{
 method:"PUT",
 headers:{
 "Content-Type":"application/json",
@@ -76,13 +90,16 @@ Authorization: localStorage.getItem("token")
 body:JSON.stringify({
 status:newStatus
 })
-});
+}
+);
 
 const data = await response.json();
 
-setTasks(tasks.map(t =>
+setTasks(
+tasks.map(t =>
 t._id === task._id ? data.task : t
-));
+)
+);
 
 };
 
@@ -97,10 +114,11 @@ Authorization: localStorage.getItem("token")
 }
 });
 
-setTasks(tasks.filter(task => task._id !== id));
+setTasks(
+tasks.filter(task => task._id !== id)
+);
 
 };
-
 
 return(
 
@@ -145,6 +163,7 @@ onChange={(e)=>setStatus(e.target.value)}
 <div className="taskGrid">
 
 {tasks.map((task)=>(
+
 <TaskCard
 key={task._id}
 title={task.title}
@@ -153,6 +172,7 @@ status={task.status}
 updateTaskStatus={()=>updateTaskStatus(task)}
 deleteTask={()=>deleteTask(task._id)}
 />
+
 ))}
 
 </div>
