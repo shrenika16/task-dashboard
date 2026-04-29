@@ -28,8 +28,22 @@ headers:{
 Authorization: token
 }
 })
-.then(res => res.json())
-.then(data => setTasks(data))
+.then(res => {
+
+if(res.status === 401 || res.status === 400){
+localStorage.clear();
+navigate("/");
+return;
+}
+
+return res.json();
+
+})
+.then(data => {
+if(data){
+setTasks(data);
+}
+})
 .catch(err => console.log(err));
 
 },[navigate]);

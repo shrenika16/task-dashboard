@@ -22,8 +22,22 @@ headers:{
 Authorization: token
 }
 })
-.then(res => res.json())
-.then(data => setTasks(data))
+.then(res => {
+
+if(res.status === 401 || res.status === 400){
+localStorage.clear();
+navigate("/");
+return;
+}
+
+return res.json();
+
+})
+.then(data => {
+if(data){
+setTasks(data);
+}
+})
 .catch(err => console.log(err));
 
 },[navigate]);
@@ -36,6 +50,7 @@ navigate("/");
 const userName = localStorage.getItem("user");
 
 const totalTasks = tasks.length;
+
 const completedTasks = tasks.filter(
 task => task.status === "Completed"
 ).length;
@@ -56,10 +71,6 @@ return(
 Welcome {userName}
 </h2>
 
-<button onClick={logout}>
-Logout
-</button>
-
 <div className="cards">
 
 <div className="card total">
@@ -78,6 +89,10 @@ Logout
 </div>
 
 </div>
+
+<button onClick={logout}>
+Logout
+</button>
 
 </div>
 
