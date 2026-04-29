@@ -73,17 +73,26 @@ Welcome {userName}
 
 <div className="cards">
 
-<div className="card total">
+<div
+className="card total"
+onClick={()=>navigate("/tasks")}
+>
 <h3>Total Tasks</h3>
 <p>{totalTasks}</p>
 </div>
 
-<div className="card completed">
+<div
+className="card completed"
+onClick={()=>navigate("/tasks?status=Completed")}
+>
 <h3>Completed Tasks</h3>
 <p>{completedTasks}</p>
 </div>
 
-<div className="card pending">
+<div
+className="card pending"
+onClick={()=>navigate("/tasks?status=Pending")}
+>
 <h3>Pending Tasks</h3>
 <p>{pendingTasks}</p>
 </div>

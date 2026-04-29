@@ -2,17 +2,21 @@ import React, { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import TaskCard from "../components/TaskCard";
 import "../styles/task.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 function Tasks(){
 
 const navigate = useNavigate();
+const location = useLocation();
 
 const [tasks,setTasks] = useState([]);
 const [title,setTitle] = useState("");
 const [description,setDescription] = useState("");
 const [status,setStatus] = useState("Pending");
 const [loading,setLoading] = useState(false);
+
+const queryParams = new URLSearchParams(location.search);
+const filterStatus = queryParams.get("status");
 
 useEffect(()=>{
 
@@ -134,6 +138,10 @@ tasks.filter(task => task._id !== id)
 
 };
 
+const filteredTasks = filterStatus
+? tasks.filter(task => task.status === filterStatus)
+: tasks;
+
 return(
 
 <div className="dashboard">
@@ -176,7 +184,7 @@ onChange={(e)=>setStatus(e.target.value)}
 
 <div className="taskGrid">
 
-{tasks.map((task)=>(
+{filteredTasks.map((task)=>(
 
 <TaskCard
 key={task._id}
