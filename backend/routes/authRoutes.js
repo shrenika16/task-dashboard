@@ -4,8 +4,9 @@ const User = require("../models/user");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-
 const JWT_SECRET = "mysecretkey";
+
+
 // REGISTER
 router.post("/register", async (req, res) => {
 try {
@@ -88,6 +89,47 @@ res.json({
 message:"Login successful",
 name:user.name,
 token
+});
+
+}catch(error){
+res.status(500).json({
+message:error.message
+});
+}
+
+});
+
+
+// FORGOT PASSWORD
+router.put("/forgot-password", async (req,res)=>{
+
+try{
+
+const { email, password } = req.body;
+
+if(!email || !password){
+return res.status(400).json({
+message:"All fields are required"
+});
+}
+
+const user = await User.findOne({ email });
+
+if(!user){
+return res.status(400).json({
+message:"User not found"
+});
+}
+
+const salt = await bcrypt.genSalt(10);
+const hashedPassword = await bcrypt.hash(password, salt);
+
+user.password = hashedPassword;
+
+await user.save();
+
+res.json({
+message:"Password updated successfully"
 });
 
 }catch(error){

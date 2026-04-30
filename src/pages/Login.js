@@ -65,6 +65,12 @@ onChange={(e)=>setPassword(e.target.value)}
 required
 />
 
+<p className="switchText">
+<Link to="/forgot-password">
+Forgot Password?
+</Link>
+</p>
+
 <button type="submit">Login</button>
 
 </form>

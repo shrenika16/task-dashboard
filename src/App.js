@@ -4,6 +4,7 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Tasks from "./pages/Tasks";
 import ProtectedRoute from "./components/ProtectedRoute";
+import ForgotPassword from "./pages/ForgotPassword";
 
 function App() {
 
@@ -15,6 +16,7 @@ return (
 
 <Route path="/" element={<Login/>}/>
 <Route path="/register" element={<Register/>}/>
+<Route path="/forgot-password" element={<ForgotPassword/>}/>
 
 <Route
 path="/dashboard"
