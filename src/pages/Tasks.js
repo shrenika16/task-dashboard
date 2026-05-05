@@ -13,7 +13,9 @@ function Tasks() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("Pending");
+
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -21,6 +23,7 @@ function Tasks() {
   const queryParams = new URLSearchParams(location.search);
   const filterStatus = queryParams.get("status");
 
+  // Fetch Tasks
   useEffect(() => {
     const token = localStorage.getItem("token");
 
@@ -28,6 +31,9 @@ function Tasks() {
       navigate("/");
       return;
     }
+
+    setLoading(true);
+    setError("");
 
     let url = `http://localhost:5000/tasks?page=${page}&limit=5`;
 
@@ -46,7 +52,6 @@ function Tasks() {
           navigate("/");
           return;
         }
-
         return res.json();
       })
       .then((data) => {
@@ -56,8 +61,13 @@ function Tasks() {
             Math.ceil((data.total || 0) / (data.limit || 1))
           );
         }
+        setLoading(false);
       })
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        console.log(err);
+        setError("Failed to fetch tasks");
+        setLoading(false);
+      });
   }, [navigate, page, filterStatus]);
 
   // Add Task
@@ -67,135 +77,165 @@ function Tasks() {
       return;
     }
 
-    setLoading(true);
+    try {
+      setLoading(true);
+      setError("");
 
-    const response = await fetch("http://localhost:5000/tasks", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: localStorage.getItem("token"),
-      },
-      body: JSON.stringify({
-        title,
-        description,
-        status,
-      }),
-    });
-
-    const data = await response.json();
-
-    setTasks([...tasks, data.task]);
-
-    setTitle("");
-    setDescription("");
-    setStatus("Pending");
-
-    setLoading(false);
-  };
-
-  // Add Sample Tasks
-  const addSampleTasks = async () => {
-    const sampleTasks = [
-      {
-        title: "Math Homework",
-        description: "Complete algebra",
-        status: "Completed",
-      },
-      {
-        title: "React Practice",
-        description: "Build components",
-        status: "Pending",
-      },
-      {
-        title: "Project Work",
-        description: "Task manager app",
-        status: "Completed",
-      },
-      {
-        title: "Node Study",
-        description: "Learn Express",
-        status: "Pending",
-      },
-      {
-        title: "MongoDB Practice",
-        description: "Database queries",
-        status: "Completed",
-      },
-      {
-        title: "API Testing",
-        description: "Test all routes",
-        status: "Pending",
-      },
-    ];
-
-    for (let task of sampleTasks) {
-      await fetch("http://localhost:5000/tasks", {
+      const response = await fetch("http://localhost:5000/tasks", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: localStorage.getItem("token"),
         },
-        body: JSON.stringify(task),
+        body: JSON.stringify({
+          title,
+          description,
+          status,
+        }),
       });
+
+      const data = await response.json();
+
+      setTasks([...tasks, data.task]);
+
+      setTitle("");
+      setDescription("");
+      setStatus("Pending");
+    } catch (err) {
+      console.log(err);
+      setError("Failed to add task");
+    } finally {
+      setLoading(false);
     }
-
-    alert("Sample tasks added");
-
-    const response = await fetch(
-      "http://localhost:5000/tasks?page=1&limit=5",
-      {
-        headers: {
-          Authorization: localStorage.getItem("token"),
-        },
-      }
-    );
-
-    const data = await response.json();
-
-    setTasks(data.tasks || []);
-    setPage(1);
   };
 
-  // Update Task
-  const updateTaskStatus = async (task) => {
-    const newStatus =
-      task.status === "Pending" ? "Completed" : "Pending";
+  // Add Sample Tasks
+  const addSampleTasks = async () => {
+    try {
+      setLoading(true);
+      setError("");
 
-    const response = await fetch(
-      `http://localhost:5000/tasks/${task._id}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: localStorage.getItem("token"),
+      const sampleTasks = [
+        {
+          title: "Math Homework",
+          description: "Complete algebra",
+          status: "Completed",
         },
-        body: JSON.stringify({
-          status: newStatus,
-        }),
+        {
+          title: "React Practice",
+          description: "Build components",
+          status: "Pending",
+        },
+        {
+          title: "Project Work",
+          description: "Task manager app",
+          status: "Completed",
+        },
+        {
+          title: "Node Study",
+          description: "Learn Express",
+          status: "Pending",
+        },
+        {
+          title: "MongoDB Practice",
+          description: "Database queries",
+          status: "Completed",
+        },
+        {
+          title: "API Testing",
+          description: "Test all routes",
+          status: "Pending",
+        },
+      ];
+
+      for (let task of sampleTasks) {
+        await fetch("http://localhost:5000/tasks", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: localStorage.getItem("token"),
+          },
+          body: JSON.stringify(task),
+        });
       }
-    );
 
-    const data = await response.json();
+      alert("Sample tasks added");
 
-    setTasks(
-      tasks.map((t) =>
-        t._id === task._id ? data.task : t
-      )
-    );
+      const response = await fetch(
+        "http://localhost:5000/tasks?page=1&limit=5",
+        {
+          headers: {
+            Authorization: localStorage.getItem("token"),
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      setTasks(data.tasks || []);
+      setPage(1);
+    } catch (err) {
+      console.log(err);
+      setError("Failed to add sample tasks");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Update Task Status
+  const updateTaskStatus = async (task) => {
+    try {
+      setError("");
+
+      const newStatus =
+        task.status === "Pending" ? "Completed" : "Pending";
+
+      const response = await fetch(
+        `http://localhost:5000/tasks/${task._id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: localStorage.getItem("token"),
+          },
+          body: JSON.stringify({
+            status: newStatus,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      setTasks(
+        tasks.map((t) =>
+          t._id === task._id ? data.task : t
+        )
+      );
+    } catch (err) {
+      console.log(err);
+      setError("Failed to update task");
+    }
   };
 
   // Delete Task
   const deleteTask = async (id) => {
-    await fetch(`http://localhost:5000/tasks/${id}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: localStorage.getItem("token"),
-      },
-    });
+    try {
+      setError("");
 
-    setTasks(
-      tasks.filter((task) => task._id !== id)
-    );
+      await fetch(`http://localhost:5000/tasks/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: localStorage.getItem("token"),
+        },
+      });
+
+      setTasks(
+        tasks.filter((task) => task._id !== id)
+      );
+    } catch (err) {
+      console.log(err);
+      setError("Failed to delete task");
+    }
   };
 
   return (
@@ -206,6 +246,12 @@ function Tasks() {
         <Navbar />
 
         <h2 className="taskTitle">Tasks</h2>
+
+        {/* Loading State */}
+        {loading && <p>Loading tasks...</p>}
+
+        {/* Error State */}
+        {error && <p>{error}</p>}
 
         <div className="taskForm">
           <input
@@ -231,7 +277,7 @@ function Tasks() {
           </select>
 
           <button onClick={addTask}>
-            {loading ? "Adding..." : "Add Task"}
+            Add Task
           </button>
 
           <button onClick={addSampleTasks}>
@@ -240,6 +286,11 @@ function Tasks() {
         </div>
 
         <div className="taskGrid">
+          {/* Empty State */}
+          {!loading && tasks.length === 0 && (
+            <p>No tasks found</p>
+          )}
+
           {tasks?.map((task) => (
             <TaskCard
               key={task._id}
