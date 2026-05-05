@@ -15,6 +15,9 @@ const [description,setDescription] = useState("");
 const [status,setStatus] = useState("Pending");
 const [loading,setLoading] = useState(false);
 
+const [page,setPage] = useState(1);
+const [totalPages,setTotalPages] = useState(1);
+
 const queryParams = new URLSearchParams(location.search);
 const filterStatus = queryParams.get("status");
 
@@ -27,7 +30,13 @@ navigate("/");
 return;
 }
 
-fetch("http://localhost:5000/tasks",{
+let url = `http://localhost:5000/tasks?page=${page}&limit=5`;
+
+if(filterStatus){
+url += `&status=${filterStatus}`;
+}
+
+fetch(url,{
 headers:{
 Authorization: token
 }
@@ -45,12 +54,15 @@ return res.json();
 })
 .then(data => {
 if(data){
-setTasks(data);
+setTasks(data.tasks || []);
+setTotalPages(
+Math.ceil((data.total || 0) / (data.limit || 1))
+);
 }
 })
 .catch(err => console.log(err));
 
-},[navigate]);
+},[navigate,page,filterStatus]);
 
 
 // Add Task
@@ -88,6 +100,73 @@ setLoading(false);
 
 };
 
+const addSampleTasks = async () => {
+
+const sampleTasks = [
+{
+title:"Math Homework",
+description:"Complete algebra",
+status:"Completed"
+},
+{
+title:"React Practice",
+description:"Build components",
+status:"Pending"
+},
+{
+title:"Project Work",
+description:"Task manager app",
+status:"Completed"
+},
+{
+title:"Node Study",
+description:"Learn Express",
+status:"Pending"
+},
+{
+title:"MongoDB Practice",
+description:"Database queries",
+status:"Completed"
+},
+{
+title:"API Testing",
+description:"Test all routes",
+status:"Pending"
+}
+];
+
+for(let task of sampleTasks){
+
+await fetch("http://localhost:5000/tasks",{
+method:"POST",
+headers:{
+"Content-Type":"application/json",
+Authorization: localStorage.getItem("token")
+},
+body:JSON.stringify(task)
+});
+
+}
+
+alert("Sample tasks added");
+const response = await fetch(
+`http://localhost:5000/tasks?page=1&limit=5`,
+{
+headers:{
+Authorization: localStorage.getItem("token")
+}
+}
+);
+
+const data = await response.json();
+
+setTasks(data.tasks || []);
+setPage(1);
+
+setPage(1);
+window.location.reload();
+
+};
 
 // Update Task
 const updateTaskStatus = async (task) => {
@@ -138,10 +217,6 @@ tasks.filter(task => task._id !== id)
 
 };
 
-const filteredTasks = filterStatus
-? tasks.filter(task => task.status === filterStatus)
-: tasks;
-
 return(
 
 <div className="dashboard">
@@ -180,11 +255,14 @@ onChange={(e)=>setStatus(e.target.value)}
 {loading ? "Adding..." : "Add Task"}
 </button>
 
+<button onClick={addSampleTasks}>
+Add Sample Tasks
+</button>
 </div>
 
 <div className="taskGrid">
 
-{filteredTasks.map((task)=>(
+{tasks?.map((task)=>(
 
 <TaskCard
 key={task._id}
@@ -196,6 +274,28 @@ deleteTask={()=>deleteTask(task._id)}
 />
 
 ))}
+
+</div>
+
+<div className="pagination">
+
+<button
+disabled={page===1}
+onClick={()=>setPage(page-1)}
+>
+Previous
+</button>
+
+<span>
+Page {page} of {totalPages}
+</span>
+
+<button
+disabled={page===totalPages}
+onClick={()=>setPage(page+1)}
+>
+Next
+</button>
 
 </div>
 
