@@ -1,6 +1,7 @@
 import React from "react";
+import "../styles/modal.css";
 
-function TaskModal({close}){
+function TaskModal({ close }){
 
 return(
 
@@ -10,13 +11,22 @@ return(
 
 <h3>Add Task</h3>
 
-<input placeholder="Title"/>
+<input
+type="text"
+placeholder="Task Title"
+/>
 
-<textarea placeholder="Description"></textarea>
+<textarea
+placeholder="Task Description"
+></textarea>
 
-<button>Save</button>
+<button>
+Save
+</button>
 
-<button onClick={close}>Cancel</button>
+<button onClick={close}>
+Cancel
+</button>
 
 </div>
 
@@ -26,4 +36,4 @@ return(
 
 }
 
-export default TaskModal
+export default TaskModal;

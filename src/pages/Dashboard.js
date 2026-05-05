@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
+import Navbar from "../components/Navbar";
 import "../styles/dashboard.css";
 import { useNavigate } from "react-router-dom";
 
@@ -35,7 +36,7 @@ return res.json();
 })
 .then(data => {
 if(data){
-setTasks(data);
+setTasks(data.tasks || []);
 }
 })
 .catch(err => console.log(err));
@@ -66,6 +67,8 @@ return(
 <Sidebar/>
 
 <div className="main">
+
+<Navbar />
 
 <h2 className="dashboardTitle">
 Welcome {userName}
