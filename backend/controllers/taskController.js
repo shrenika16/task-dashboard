@@ -1,7 +1,7 @@
 const Task = require("../models/TaskModel");
 
 // GET /tasks
-exports.getTasks = async (req,res)=>{
+exports.getTasks = async (req,res,next)=>{
 
 try{
 
@@ -40,7 +40,9 @@ tasks = tasks.sort({ createdAt: 1 });
 }
 
 // Pagination
-tasks = tasks.skip((page - 1) * limit).limit(Number(limit));
+tasks = tasks
+.skip((page - 1) * limit)
+.limit(Number(limit));
 
 const result = await tasks;
 
@@ -53,9 +55,7 @@ limit: Number(limit)
 
 }catch(error){
 
-res.status(500).json({
-message:error.message
-});
+next(error);
 
 }
 
@@ -63,7 +63,7 @@ message:error.message
 
 
 // POST /tasks
-exports.addTask = async (req,res)=>{
+exports.addTask = async (req,res,next)=>{
 
 try{
 
@@ -83,9 +83,7 @@ task:savedTask
 
 }catch(error){
 
-res.status(500).json({
-message:error.message
-});
+next(error);
 
 }
 
@@ -93,7 +91,7 @@ message:error.message
 
 
 // UPDATE task
-exports.updateTask = async (req,res)=>{
+exports.updateTask = async (req,res,next)=>{
 
 try{
 
@@ -116,9 +114,7 @@ task:updatedTask
 
 }catch(error){
 
-res.status(500).json({
-message:error.message
-});
+next(error);
 
 }
 
@@ -126,7 +122,7 @@ message:error.message
 
 
 // DELETE task
-exports.deleteTask = async (req,res)=>{
+exports.deleteTask = async (req,res,next)=>{
 
 try{
 
@@ -146,9 +142,7 @@ message:"Task deleted"
 
 }catch(error){
 
-res.status(500).json({
-message:error.message
-});
+next(error);
 
 }
 
