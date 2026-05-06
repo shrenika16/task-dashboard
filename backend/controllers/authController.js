@@ -5,131 +5,136 @@ const jwt = require("jsonwebtoken");
 const JWT_SECRET = "mysecretkey";
 
 const registerUser = async (req, res) => {
-try {
-const { name, email, password } = req.body;
+  try {
+    const { name, email, password, role } = req.body;
 
-if (!name || !email || !password) {
-return res.status(400).json({
-message: "All fields are required"
-});
-}
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        message: "All fields are required"
+      });
+    }
 
-const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email });
 
-if (existingUser) {
-return res.status(400).json({
-message: "User already exists"
-});
-}
+    if (existingUser) {
+      return res.status(400).json({
+        message: "User already exists"
+      });
+    }
 
-const salt = await bcrypt.genSalt(10);
-const hashedPassword = await bcrypt.hash(password, salt);
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
-const newUser = new User({
-name,
-email,
-password: hashedPassword
-});
+    const newUser = new User({
+      name,
+      email,
+      password: hashedPassword,
+      role
+    });
 
-await newUser.save();
+    await newUser.save();
 
-res.status(201).json({
-message: "User registered successfully"
-});
+    res.status(201).json({
+      message: "User registered successfully"
+    });
 
-} catch (error) {
-res.status(500).json({
-message: error.message
-});
-}
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
 };
 
 const loginUser = async (req, res) => {
-try {
-const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-if (!email || !password) {
-return res.status(400).json({
-message: "All fields are required"
-});
-}
+    if (!email || !password) {
+      return res.status(400).json({
+        message: "All fields are required"
+      });
+    }
 
-const user = await User.findOne({ email });
+    const user = await User.findOne({ email });
 
-if (!user) {
-return res.status(400).json({
-message: "User not found"
-});
-}
+    if (!user) {
+      return res.status(400).json({
+        message: "User not found"
+      });
+    }
 
-const isMatch = await bcrypt.compare(
-password,
-user.password
-);
+    const isMatch = await bcrypt.compare(
+      password,
+      user.password
+    );
 
-if (!isMatch) {
-return res.status(400).json({
-message: "Invalid password"
-});
-}
+    if (!isMatch) {
+      return res.status(400).json({
+        message: "Invalid password"
+      });
+    }
 
-const token = jwt.sign(
-{ userId: user._id },
-JWT_SECRET,
-{ expiresIn: "1h" }
-);
+    const token = jwt.sign(
+      {
+        userId: user._id,
+        role: user.role
+      },
+      JWT_SECRET,
+      { expiresIn: "1h" }
+    );
 
-res.json({
-message: "Login successful",
-name: user.name,
-token
-});
+    res.json({
+      message: "Login successful",
+      name: user.name,
+      role: user.role,
+      token
+    });
 
-} catch (error) {
-res.status(500).json({
-message: error.message
-});
-}
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
 };
 
 const forgotPassword = async (req, res) => {
-try {
-const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-if (!email || !password) {
-return res.status(400).json({
-message: "All fields are required"
-});
-}
+    if (!email || !password) {
+      return res.status(400).json({
+        message: "All fields are required"
+      });
+    }
 
-const user = await User.findOne({ email });
+    const user = await User.findOne({ email });
 
-if (!user) {
-return res.status(400).json({
-message: "User not found"
-});
-}
+    if (!user) {
+      return res.status(400).json({
+        message: "User not found"
+      });
+    }
 
-const salt = await bcrypt.genSalt(10);
-const hashedPassword = await bcrypt.hash(password, salt);
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
-user.password = hashedPassword;
+    user.password = hashedPassword;
 
-await user.save();
+    await user.save();
 
-res.json({
-message: "Password updated successfully"
-});
+    res.json({
+      message: "Password updated successfully"
+    });
 
-} catch (error) {
-res.status(500).json({
-message: error.message
-});
-}
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
 };
 
 module.exports = {
-registerUser,
-loginUser,
-forgotPassword
+  registerUser,
+  loginUser,
+  forgotPassword
 };

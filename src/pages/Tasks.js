@@ -17,6 +17,8 @@ function Tasks() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const role = localStorage.getItem("role");
+
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -56,11 +58,13 @@ function Tasks() {
       })
       .then((data) => {
         if (data) {
-          setTasks(data.tasks || []);
+          setTasks(data.tasks ? data.tasks : data);
+
           setTotalPages(
             Math.ceil((data.total || 0) / (data.limit || 1))
           );
         }
+
         setLoading(false);
       })
       .catch((err) => {
@@ -109,7 +113,7 @@ function Tasks() {
     }
   };
 
-  // Add Sample Tasks
+  // Add Sample Tasks (Admin only)
   const addSampleTasks = async () => {
     try {
       setLoading(true);
@@ -172,7 +176,7 @@ function Tasks() {
 
       const data = await response.json();
 
-      setTasks(data.tasks || []);
+      setTasks(data.tasks ? data.tasks : data);
       setPage(1);
     } catch (err) {
       console.log(err);
@@ -229,9 +233,7 @@ function Tasks() {
         },
       });
 
-      setTasks(
-        tasks.filter((task) => task._id !== id)
-      );
+      setTasks(tasks.filter((task) => task._id !== id));
     } catch (err) {
       console.log(err);
       setError("Failed to delete task");
@@ -246,11 +248,9 @@ function Tasks() {
         <Navbar />
 
         <h2 className="taskTitle">Tasks</h2>
+        <p>Role: {role}</p>
 
-        {/* Loading State */}
         {loading && <p>Loading tasks...</p>}
-
-        {/* Error State */}
         {error && <p>{error}</p>}
 
         <div className="taskForm">
@@ -280,14 +280,15 @@ function Tasks() {
             Add Task
           </button>
 
-          <button onClick={addSampleTasks}>
-            Add Sample Tasks
-          </button>
+          {role === "Admin" && (
+            <button onClick={addSampleTasks}>
+              Add Sample Tasks
+            </button>
+          )}
         </div>
 
         <div className="taskGrid">
-          {/* Empty State */}
-          {!loading && tasks.length === 0 && (
+          {!loading && tasks?.length === 0 && (
             <p>No tasks found</p>
           )}
 

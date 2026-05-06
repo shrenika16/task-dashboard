@@ -30,6 +30,8 @@ if(response.ok){
 alert("Hi " + data.name);
 localStorage.setItem("user",data.name);
 localStorage.setItem("token", data.token);
+localStorage.setItem("role", data.role);
+
 navigate("/dashboard");
 }
 else{
