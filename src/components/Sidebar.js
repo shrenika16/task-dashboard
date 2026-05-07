@@ -3,40 +3,44 @@ import { Link, useNavigate } from "react-router-dom";
 import "../styles/dashboard.css";
 
 function Sidebar() {
+  const navigate = useNavigate();
 
-const navigate = useNavigate();
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    navigate("/");
+  };
 
-const handleLogout = () => {
-localStorage.removeItem("user");
-navigate("/");
-};
+  return (
+    <div className="sidebar">
+      <h3>Task App</h3>
 
-return(
+      <ul>
+        <li>
+          <Link to="/dashboard">Dashboard</Link>
+        </li>
 
-<div className="sidebar">
+        <li>
+          <Link to="/tasks">Tasks</Link>
+        </li>
 
-<h3>Task App</h3>
+        {localStorage.getItem("role") === "Admin" && (
+          <li>
+            <Link to="/admin-dashboard">
+              Admin Dashboard
+            </Link>
+          </li>
+        )}
 
-<ul>
-
-<li>
-<Link to="/dashboard">Dashboard</Link>
-</li>
-
-<li>
-<Link to="/tasks">Tasks</Link>
-</li>
-
-<li>
-<button onClick={handleLogout}>Logout</button>
-</li>
-
-</ul>
-
-</div>
-
-)
-
+        <li>
+          <button onClick={handleLogout}>
+            Logout
+          </button>
+        </li>
+      </ul>
+    </div>
+  );
 }
 
 export default Sidebar;

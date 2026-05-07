@@ -6,6 +6,7 @@ const connectDB = require("./config/db");
 const taskRoutes = require("./routes/taskRoutes");
 const authRoutes = require("./routes/authRoutes");
 const errorHandler = require("./middleware/errorMiddleware");
+const dashboardRoutes = require("./routes/dashboardRoutes");
 
 const app = express();
 
@@ -24,6 +25,7 @@ connectDB();
 // Routes
 app.use("/tasks", taskRoutes);
 app.use("/auth", authRoutes);
+app.use("/dashboard", dashboardRoutes);
 
 // Global Error Handler
 app.use(errorHandler);
