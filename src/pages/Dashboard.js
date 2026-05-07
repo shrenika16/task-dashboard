@@ -4,114 +4,108 @@ import Navbar from "../components/Navbar";
 import "../styles/dashboard.css";
 import { useNavigate } from "react-router-dom";
 
-function Dashboard(){
+function Dashboard() {
+  const navigate = useNavigate();
+  const [tasks, setTasks] = useState([]);
 
-const navigate = useNavigate();
-const [tasks,setTasks] = useState([]);
+  useEffect(() => {
+    const token = localStorage.getItem("token");
 
-useEffect(()=>{
+    if (!token) {
+      navigate("/");
+      return;
+    }
 
-const token = localStorage.getItem("token");
+    fetch("http://localhost:5000/tasks?page=1&limit=100", {
+      headers: {
+        Authorization: token,
+      },
+    })
+      .then((res) => {
+        if (res.status === 401 || res.status === 400) {
+          localStorage.clear();
+          navigate("/");
+          return;
+        }
 
-if(!token){
-navigate("/");
-return;
-}
+        return res.json();
+      })
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setTasks(data);
+        } else if (data.tasks) {
+          setTasks(data.tasks);
+        } else {
+          setTasks([]);
+        }
+      })
+      .catch((err) => console.log(err));
+  }, [navigate]);
 
-fetch("http://localhost:5000/tasks",{
-headers:{
-Authorization: token
-}
-})
-.then(res => {
+  const logout = () => {
+    localStorage.clear();
+    navigate("/");
+  };
 
-if(res.status === 401 || res.status === 400){
-localStorage.clear();
-navigate("/");
-return;
-}
+  const userName = localStorage.getItem("user");
 
-return res.json();
+  const totalTasks = tasks.length;
 
-})
-.then(data => {
-if(data){
-setTasks(data.tasks || []);
-}
-})
-.catch(err => console.log(err));
+  const completedTasks = tasks.filter(
+    (task) => task.status === "Completed"
+  ).length;
 
-},[navigate]);
+  const pendingTasks = tasks.filter(
+    (task) => task.status === "Pending"
+  ).length;
 
-const logout = () => {
-localStorage.clear();
-navigate("/");
-};
+  return (
+    <div className="dashboard">
+      <Sidebar />
 
-const userName = localStorage.getItem("user");
+      <div className="main">
+        <Navbar />
 
-const totalTasks = tasks.length;
+        <h2 className="dashboardTitle">
+          Welcome {userName}
+        </h2>
 
-const completedTasks = tasks.filter(
-task => task.status === "Completed"
-).length;
+        <div className="cards">
+          <div
+            className="card total"
+            onClick={() => navigate("/tasks")}
+          >
+            <h3>Total Tasks</h3>
+            <p>{totalTasks}</p>
+          </div>
 
-const pendingTasks = tasks.filter(
-task => task.status === "Pending"
-).length;
+          <div
+            className="card completed"
+            onClick={() =>
+              navigate("/tasks?status=Completed")
+            }
+          >
+            <h3>Completed Tasks</h3>
+            <p>{completedTasks}</p>
+          </div>
 
-return(
+          <div
+            className="card pending"
+            onClick={() =>
+              navigate("/tasks?status=Pending")
+            }
+          >
+            <h3>Pending Tasks</h3>
+            <p>{pendingTasks}</p>
+          </div>
+        </div>
 
-<div className="dashboard">
-
-<Sidebar/>
-
-<div className="main">
-
-<Navbar />
-
-<h2 className="dashboardTitle">
-Welcome {userName}
-</h2>
-
-<div className="cards">
-
-<div
-className="card total"
-onClick={()=>navigate("/tasks")}
->
-<h3>Total Tasks</h3>
-<p>{totalTasks}</p>
-</div>
-
-<div
-className="card completed"
-onClick={()=>navigate("/tasks?status=Completed")}
->
-<h3>Completed Tasks</h3>
-<p>{completedTasks}</p>
-</div>
-
-<div
-className="card pending"
-onClick={()=>navigate("/tasks?status=Pending")}
->
-<h3>Pending Tasks</h3>
-<p>{pendingTasks}</p>
-</div>
-
-</div>
-
-<button onClick={logout}>
-Logout
-</button>
-
-</div>
-
-</div>
-
-)
-
+        <button onClick={logout}>
+          Logout
+        </button>
+      </div>
+    </div>
+  );
 }
 
 export default Dashboard;

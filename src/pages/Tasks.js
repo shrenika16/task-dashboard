@@ -25,6 +25,14 @@ function Tasks() {
   const queryParams = new URLSearchParams(location.search);
   const filterStatus = queryParams.get("status");
 
+  console.log("Current URL:", location.search);
+  console.log("Filter Status:", filterStatus);
+
+  // Reset page when filter changes
+  useEffect(() => {
+    setPage(1);
+  }, [filterStatus]);
+
   // Fetch Tasks
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -54,15 +62,22 @@ function Tasks() {
           navigate("/");
           return;
         }
+
         return res.json();
       })
       .then((data) => {
-        if (data) {
-          setTasks(data.tasks ? data.tasks : data);
+        console.log("API Response:", data);
 
-          setTotalPages(
-            Math.ceil((data.total || 0) / (data.limit || 1))
-          );
+        if (data) {
+          if (Array.isArray(data)) {
+            setTasks(data);
+            setTotalPages(1);
+          } else {
+            setTasks(data.tasks || []);
+            setTotalPages(
+              Math.ceil((data.total || 0) / (data.limit || 1))
+            );
+          }
         }
 
         setLoading(false);
@@ -164,19 +179,6 @@ function Tasks() {
       }
 
       alert("Sample tasks added");
-
-      const response = await fetch(
-        "http://localhost:5000/tasks?page=1&limit=5",
-        {
-          headers: {
-            Authorization: localStorage.getItem("token"),
-          },
-        }
-      );
-
-      const data = await response.json();
-
-      setTasks(data.tasks ? data.tasks : data);
       setPage(1);
     } catch (err) {
       console.log(err);
@@ -233,7 +235,9 @@ function Tasks() {
         },
       });
 
-      setTasks(tasks.filter((task) => task._id !== id));
+      setTasks(
+        tasks.filter((task) => task._id !== id)
+      );
     } catch (err) {
       console.log(err);
       setError("Failed to delete task");
@@ -276,9 +280,7 @@ function Tasks() {
             <option>Completed</option>
           </select>
 
-          <button onClick={addTask}>
-            Add Task
-          </button>
+          <button onClick={addTask}>Add Task</button>
 
           {role === "Admin" && (
             <button onClick={addSampleTasks}>
@@ -288,11 +290,11 @@ function Tasks() {
         </div>
 
         <div className="taskGrid">
-          {!loading && tasks?.length === 0 && (
+          {!loading && tasks.length === 0 && (
             <p>No tasks found</p>
           )}
 
-          {tasks?.map((task) => (
+          {tasks.map((task) => (
             <TaskCard
               key={task._id}
               title={task.title}
