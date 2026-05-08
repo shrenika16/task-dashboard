@@ -28,4 +28,9 @@ const taskSchema = new mongoose.Schema({
   }
 });
 
+// Performance Optimization (Search faster)
+taskSchema.index({
+  title: "text"
+});
+
 module.exports = mongoose.model("Task", taskSchema);

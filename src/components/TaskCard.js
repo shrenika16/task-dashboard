@@ -1,34 +1,40 @@
-import React from "react";
+import React, { memo } from "react";
 
 function TaskCard({
-  title,
-  desc,
-  status,
+  task,
   updateTaskStatus,
   deleteTask
 }) {
   return (
     <div className="taskCard">
-      <h3>{title}</h3>
+      <h3>{task.title}</h3>
 
-      <p>{desc}</p>
+      <p>{task.description}</p>
 
       <span
         className={`status ${
-          status === "Completed"
+          task.status === "Completed"
             ? "completed"
             : "pending"
         }`}
       >
-        {status}
+        {task.status}
       </span>
 
       <div className="taskActions">
-        <button onClick={updateTaskStatus}>
+        <button
+          onClick={() =>
+            updateTaskStatus(task)
+          }
+        >
           Update
         </button>
 
-        <button onClick={deleteTask}>
+        <button
+          onClick={() =>
+            deleteTask(task._id)
+          }
+        >
           Delete
         </button>
       </div>
@@ -36,4 +42,4 @@ function TaskCard({
   );
 }
 
-export default TaskCard;
+export default memo(TaskCard);

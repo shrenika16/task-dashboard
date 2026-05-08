@@ -1,4 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, {
+  useEffect,
+  useState,
+  useMemo
+} from "react";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import "../styles/dashboard.css";
@@ -6,7 +10,9 @@ import { useNavigate } from "react-router-dom";
 
 function Dashboard() {
   const navigate = useNavigate();
+
   const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -15,6 +21,8 @@ function Dashboard() {
       navigate("/");
       return;
     }
+
+    setLoading(true);
 
     fetch("http://localhost:5000/tasks?page=1&limit=100", {
       headers: {
@@ -38,8 +46,13 @@ function Dashboard() {
         } else {
           setTasks([]);
         }
+
+        setLoading(false);
       })
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        console.log(err);
+        setLoading(false);
+      });
   }, [navigate]);
 
   const logout = () => {
@@ -49,15 +62,27 @@ function Dashboard() {
 
   const userName = localStorage.getItem("user");
 
-  const totalTasks = tasks.length;
+  // Performance Optimization
+  const totalTasks = useMemo(
+    () => tasks.length,
+    [tasks]
+  );
 
-  const completedTasks = tasks.filter(
-    (task) => task.status === "Completed"
-  ).length;
+  const completedTasks = useMemo(
+    () =>
+      tasks.filter(
+        (task) => task.status === "Completed"
+      ).length,
+    [tasks]
+  );
 
-  const pendingTasks = tasks.filter(
-    (task) => task.status === "Pending"
-  ).length;
+  const pendingTasks = useMemo(
+    () =>
+      tasks.filter(
+        (task) => task.status === "Pending"
+      ).length,
+    [tasks]
+  );
 
   return (
     <div className="dashboard">
@@ -69,6 +94,8 @@ function Dashboard() {
         <h2 className="dashboardTitle">
           Welcome {userName}
         </h2>
+
+        {loading && <p>Loading...</p>}
 
         <div className="cards">
           <div

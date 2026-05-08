@@ -18,39 +18,43 @@ exports.getTasks = async (req, res, next) => {
       query.userId = req.user.userId;
     }
 
-    // Filter
+    // Filter by status
     if (status) {
       query.status = status;
     }
 
-    // Search
+    // Optimized Search
     if (search) {
-      query.title = {
-        $regex: search,
-        $options: "i"
+      query.$text = {
+        $search: search
       };
     }
 
     // Total count
     const total = await Task.countDocuments(query);
 
-    let tasks = Task.find(query);
+    let tasksQuery = Task.find(query);
 
     // Sorting
     if (sort === "latest") {
-      tasks = tasks.sort({ createdAt: -1 });
+      tasksQuery = tasksQuery.sort({
+        createdAt: -1
+      });
+    } else if (sort === "oldest") {
+      tasksQuery = tasksQuery.sort({
+        createdAt: 1
+      });
+    } else {
+      tasksQuery = tasksQuery.sort({
+        createdAt: -1
+      });
     }
 
-    if (sort === "oldest") {
-      tasks = tasks.sort({ createdAt: 1 });
-    }
-
-    // Pagination
-    tasks = tasks
+    // Pagination + lean
+    const result = await tasksQuery
       .skip((page - 1) * limit)
-      .limit(Number(limit));
-
-    const result = await tasks;
+      .limit(Number(limit))
+      .lean();
 
     res.json({
       tasks: result,
@@ -86,6 +90,49 @@ exports.addTask = async (req, res, next) => {
   }
 };
 
+// ADD SAMPLE TASKS (Optimized)
+exports.addSampleTasks = async (req, res, next) => {
+  try {
+    const sampleTasks = [
+      {
+        title: "Math Homework",
+        description: "Complete algebra",
+        status: "Completed",
+        userId: req.user.userId
+      },
+      {
+        title: "React Practice",
+        description: "Build components",
+        status: "Pending",
+        userId: req.user.userId
+      },
+      {
+        title: "Project Work",
+        description: "Task manager app",
+        status: "Completed",
+        userId: req.user.userId
+      },
+      {
+        title: "Node Study",
+        description: "Learn Express",
+        status: "Pending",
+        userId: req.user.userId
+      }
+    ];
+
+    const savedTasks =
+      await Task.insertMany(sampleTasks);
+
+    res.json({
+      message: "Sample tasks added",
+      tasks: savedTasks
+    });
+
+  } catch (error) {
+    next(error);
+  }
+};
+
 // UPDATE task
 exports.updateTask = async (req, res, next) => {
   try {
@@ -97,7 +144,6 @@ exports.updateTask = async (req, res, next) => {
       });
     }
 
-    // Access check
     if (
       req.user.role !== "Admin" &&
       task.userId.toString() !== req.user.userId
@@ -107,11 +153,12 @@ exports.updateTask = async (req, res, next) => {
       });
     }
 
-    const updatedTask = await Task.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
+    const updatedTask =
+      await Task.findByIdAndUpdate(
+        req.params.id,
+        req.body,
+        { new: true }
+      ).lean();
 
     res.json({
       message: "Task updated",
@@ -134,7 +181,6 @@ exports.deleteTask = async (req, res, next) => {
       });
     }
 
-    // Access check
     if (
       req.user.role !== "Admin" &&
       task.userId.toString() !== req.user.userId

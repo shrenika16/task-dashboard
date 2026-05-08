@@ -1,4 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, {
+  useEffect,
+  useState,
+  useCallback
+} from "react";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import TaskCard from "../components/TaskCard";
@@ -13,6 +17,7 @@ function Tasks() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("Pending");
+  const [search, setSearch] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -25,15 +30,10 @@ function Tasks() {
   const queryParams = new URLSearchParams(location.search);
   const filterStatus = queryParams.get("status");
 
-  console.log("Current URL:", location.search);
-  console.log("Filter Status:", filterStatus);
-
-  // Reset page when filter changes
   useEffect(() => {
     setPage(1);
   }, [filterStatus]);
 
-  // Fetch Tasks
   useEffect(() => {
     const token = localStorage.getItem("token");
 
@@ -45,10 +45,15 @@ function Tasks() {
     setLoading(true);
     setError("");
 
-    let url = `http://localhost:5000/tasks?page=${page}&limit=5`;
+    let url =
+      `http://localhost:5000/tasks?page=${page}&limit=5`;
 
     if (filterStatus) {
       url += `&status=${filterStatus}`;
+    }
+
+    if (search) {
+      url += `&search=${search}`;
     }
 
     fetch(url, {
@@ -57,7 +62,10 @@ function Tasks() {
       },
     })
       .then((res) => {
-        if (res.status === 401 || res.status === 400) {
+        if (
+          res.status === 401 ||
+          res.status === 400
+        ) {
           localStorage.clear();
           navigate("/");
           return;
@@ -66,19 +74,13 @@ function Tasks() {
         return res.json();
       })
       .then((data) => {
-        console.log("API Response:", data);
-
-        if (data) {
-          if (Array.isArray(data)) {
-            setTasks(data);
-            setTotalPages(1);
-          } else {
-            setTasks(data.tasks || []);
-            setTotalPages(
-              Math.ceil((data.total || 0) / (data.limit || 1))
-            );
-          }
-        }
+        setTasks(data.tasks || []);
+        setTotalPages(
+          Math.ceil(
+            (data.total || 0) /
+            (data.limit || 1)
+          )
+        );
 
         setLoading(false);
       })
@@ -87,162 +89,120 @@ function Tasks() {
         setError("Failed to fetch tasks");
         setLoading(false);
       });
-  }, [navigate, page, filterStatus]);
+  }, [
+    navigate,
+    page,
+    filterStatus,
+    search
+  ]);
 
-  // Add Task
-  const addTask = async () => {
+  const addTask = useCallback(async () => {
     if (!title || !description) {
       alert("Please fill all fields");
       return;
     }
 
     try {
-      setLoading(true);
-      setError("");
-
-      const response = await fetch("http://localhost:5000/tasks", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: localStorage.getItem("token"),
-        },
-        body: JSON.stringify({
-          title,
-          description,
-          status,
-        }),
-      });
-
-      const data = await response.json();
-
-      setTasks([...tasks, data.task]);
-
-      setTitle("");
-      setDescription("");
-      setStatus("Pending");
-    } catch (err) {
-      console.log(err);
-      setError("Failed to add task");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Add Sample Tasks (Admin only)
-  const addSampleTasks = async () => {
-    try {
-      setLoading(true);
-      setError("");
-
-      const sampleTasks = [
+      const response = await fetch(
+        "http://localhost:5000/tasks",
         {
-          title: "Math Homework",
-          description: "Complete algebra",
-          status: "Completed",
-        },
-        {
-          title: "React Practice",
-          description: "Build components",
-          status: "Pending",
-        },
-        {
-          title: "Project Work",
-          description: "Task manager app",
-          status: "Completed",
-        },
-        {
-          title: "Node Study",
-          description: "Learn Express",
-          status: "Pending",
-        },
-        {
-          title: "MongoDB Practice",
-          description: "Database queries",
-          status: "Completed",
-        },
-        {
-          title: "API Testing",
-          description: "Test all routes",
-          status: "Pending",
-        },
-      ];
-
-      for (let task of sampleTasks) {
-        await fetch("http://localhost:5000/tasks", {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
-            Authorization: localStorage.getItem("token"),
-          },
-          body: JSON.stringify(task),
-        });
-      }
-
-      alert("Sample tasks added");
-      setPage(1);
-    } catch (err) {
-      console.log(err);
-      setError("Failed to add sample tasks");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Update Task Status
-  const updateTaskStatus = async (task) => {
-    try {
-      setError("");
-
-      const newStatus =
-        task.status === "Pending" ? "Completed" : "Pending";
-
-      const response = await fetch(
-        `http://localhost:5000/tasks/${task._id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: localStorage.getItem("token"),
+            "Content-Type":
+              "application/json",
+            Authorization:
+              localStorage.getItem("token"),
           },
           body: JSON.stringify({
-            status: newStatus,
+            title,
+            description,
+            status,
           }),
         }
       );
 
       const data = await response.json();
 
-      setTasks(
-        tasks.map((t) =>
-          t._id === task._id ? data.task : t
-        )
-      );
+      setTasks((prev) => [
+        ...prev,
+        data.task
+      ]);
+
+      setTitle("");
+      setDescription("");
+      setStatus("Pending");
     } catch (err) {
       console.log(err);
-      setError("Failed to update task");
     }
-  };
+  }, [title, description, status]);
 
-  // Delete Task
-  const deleteTask = async (id) => {
-    try {
-      setError("");
+  const updateTaskStatus =
+    useCallback(async (task) => {
+      try {
+        const newStatus =
+          task.status === "Pending"
+            ? "Completed"
+            : "Pending";
 
-      await fetch(`http://localhost:5000/tasks/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: localStorage.getItem("token"),
-        },
-      });
+        const response = await fetch(
+          `http://localhost:5000/tasks/${task._id}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type":
+                "application/json",
+              Authorization:
+                localStorage.getItem(
+                  "token"
+                ),
+            },
+            body: JSON.stringify({
+              status: newStatus,
+            }),
+          }
+        );
 
-      setTasks(
-        tasks.filter((task) => task._id !== id)
-      );
-    } catch (err) {
-      console.log(err);
-      setError("Failed to delete task");
-    }
-  };
+        const data =
+          await response.json();
+
+        setTasks((prev) =>
+          prev.map((t) =>
+            t._id === task._id
+              ? data.task
+              : t
+          )
+        );
+      } catch (err) {
+        console.log(err);
+      }
+    }, []);
+
+  const deleteTask =
+    useCallback(async (id) => {
+      try {
+        await fetch(
+          `http://localhost:5000/tasks/${id}`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization:
+                localStorage.getItem(
+                  "token"
+                ),
+            },
+          }
+        );
+
+        setTasks((prev) =>
+          prev.filter(
+            (task) =>
+              task._id !== id
+          )
+        );
+      } catch (err) {
+        console.log(err);
+      }
+    }, []);
 
   return (
     <div className="dashboard">
@@ -251,10 +211,13 @@ function Tasks() {
       <div className="main">
         <Navbar />
 
-        <h2 className="taskTitle">Tasks</h2>
+        <h2 className="taskTitle">
+          Tasks
+        </h2>
+
         <p>Role: {role}</p>
 
-        {loading && <p>Loading tasks...</p>}
+        {loading && <p>Loading...</p>}
         {error && <p>{error}</p>}
 
         <div className="taskForm">
@@ -262,46 +225,74 @@ function Tasks() {
             type="text"
             placeholder="Task Title"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e) =>
+              setTitle(
+                e.target.value
+              )
+            }
           />
 
           <input
             type="text"
             placeholder="Description"
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={(e) =>
+              setDescription(
+                e.target.value
+              )
+            }
           />
 
           <select
             value={status}
-            onChange={(e) => setStatus(e.target.value)}
+            onChange={(e) =>
+              setStatus(
+                e.target.value
+              )
+            }
           >
-            <option>Pending</option>
-            <option>Completed</option>
+            <option>
+              Pending
+            </option>
+            <option>
+              Completed
+            </option>
           </select>
 
-          <button onClick={addTask}>Add Task</button>
+          <input
+            type="text"
+            placeholder="Search Task"
+            value={search}
+            onChange={(e) =>
+              setSearch(
+                e.target.value
+              )
+            }
+          />
 
-          {role === "Admin" && (
-            <button onClick={addSampleTasks}>
-              Add Sample Tasks
-            </button>
-          )}
+          <button onClick={addTask}>
+            Add Task
+          </button>
         </div>
 
         <div className="taskGrid">
-          {!loading && tasks.length === 0 && (
-            <p>No tasks found</p>
-          )}
+          {!loading &&
+            tasks.length === 0 && (
+              <p>
+                No tasks found
+              </p>
+            )}
 
           {tasks.map((task) => (
             <TaskCard
               key={task._id}
-              title={task.title}
-              desc={task.description}
-              status={task.status}
-              updateTaskStatus={() => updateTaskStatus(task)}
-              deleteTask={() => deleteTask(task._id)}
+              task={task}
+              updateTaskStatus={
+                updateTaskStatus
+              }
+              deleteTask={
+                deleteTask
+              }
             />
           ))}
         </div>
@@ -309,18 +300,25 @@ function Tasks() {
         <div className="pagination">
           <button
             disabled={page === 1}
-            onClick={() => setPage(page - 1)}
+            onClick={() =>
+              setPage(page - 1)
+            }
           >
             Previous
           </button>
 
           <span>
-            Page {page} of {totalPages}
+            Page {page} of{" "}
+            {totalPages}
           </span>
 
           <button
-            disabled={page === totalPages}
-            onClick={() => setPage(page + 1)}
+            disabled={
+              page === totalPages
+            }
+            onClick={() =>
+              setPage(page + 1)
+            }
           >
             Next
           </button>
