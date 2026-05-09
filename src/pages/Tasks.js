@@ -7,7 +7,10 @@ import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import TaskCard from "../components/TaskCard";
 import "../styles/task.css";
-import { useNavigate, useLocation } from "react-router-dom";
+import {
+  useNavigate,
+  useLocation
+} from "react-router-dom";
 
 function Tasks() {
   const navigate = useNavigate();
@@ -15,80 +18,107 @@ function Tasks() {
 
   const [tasks, setTasks] = useState([]);
   const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [status, setStatus] = useState("Pending");
-  const [search, setSearch] = useState("");
+  const [description, setDescription] =
+    useState("");
+  const [status, setStatus] =
+    useState("Pending");
+  const [search, setSearch] =
+    useState("");
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [loading, setLoading] =
+    useState(false);
+  const [error, setError] =
+    useState("");
 
-  const role = localStorage.getItem("role");
+  const role =
+    localStorage.getItem("role");
 
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [page, setPage] =
+    useState(1);
 
-  const queryParams = new URLSearchParams(location.search);
-  const filterStatus = queryParams.get("status");
+  const [totalPages, setTotalPages] =
+    useState(1);
 
+  const queryParams =
+    new URLSearchParams(
+      location.search
+    );
+
+  const filterStatus =
+    queryParams.get("status");
+
+  // Reset page when filter changes
   useEffect(() => {
     setPage(1);
   }, [filterStatus]);
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
+  // Fetch Tasks
+  const fetchTasks = useCallback(async () => {
+    const token =
+      localStorage.getItem("token");
 
     if (!token) {
       navigate("/");
       return;
     }
 
-    setLoading(true);
-    setError("");
+    try {
+      setLoading(true);
+      setError("");
 
-    let url =
-      `http://localhost:5000/tasks?page=${page}&limit=5`;
+      let url = `http://localhost:5000/tasks?page=${page}&limit=5`;
 
-    if (filterStatus) {
-      url += `&status=${filterStatus}`;
-    }
+      // Filter
+      if (filterStatus) {
+        url += `&status=${filterStatus}`;
+      }
 
-    if (search) {
-      url += `&search=${search}`;
-    }
+      // Search
+      if (search.trim()) {
+        url += `&search=${search}`;
+      }
 
-    fetch(url, {
-      headers: {
-        Authorization: token,
-      },
-    })
-      .then((res) => {
-        if (
-          res.status === 401 ||
-          res.status === 400
-        ) {
-          localStorage.clear();
-          navigate("/");
-          return;
+      const response = await fetch(url, {
+        headers: {
+          Authorization: token
         }
+      });
 
-        return res.json();
-      })
-      .then((data) => {
+      if (
+        response.status === 401 ||
+        response.status === 400
+      ) {
+        localStorage.clear();
+        navigate("/");
+        return;
+      }
+
+      const data =
+        await response.json();
+
+      // Handle API response
+      if (Array.isArray(data)) {
+        setTasks(data);
+        setTotalPages(1);
+      } else {
         setTasks(data.tasks || []);
-        setTotalPages(
+
+        const pages =
           Math.ceil(
             (data.total || 0) /
-            (data.limit || 1)
-          )
-        );
+              (data.limit || 1)
+          ) || 1;
 
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.log(err);
-        setError("Failed to fetch tasks");
-        setLoading(false);
-      });
+        setTotalPages(pages);
+      }
+    } catch (err) {
+      console.log(err);
+      setError(
+        "Failed to fetch tasks"
+      );
+    } finally {
+      setLoading(false);
+    }
   }, [
     navigate,
     page,
@@ -96,113 +126,158 @@ function Tasks() {
     search
   ]);
 
-  const addTask = useCallback(async () => {
-    if (!title || !description) {
-      alert("Please fill all fields");
-      return;
-    }
+  useEffect(() => {
+    fetchTasks();
+  }, [fetchTasks]);
 
-    try {
-      const response = await fetch(
-        "http://localhost:5000/tasks",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json",
-            Authorization:
-              localStorage.getItem("token"),
-          },
-          body: JSON.stringify({
-            title,
-            description,
-            status,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      setTasks((prev) => [
-        ...prev,
-        data.task
-      ]);
-
-      setTitle("");
-      setDescription("");
-      setStatus("Pending");
-    } catch (err) {
-      console.log(err);
-    }
-  }, [title, description, status]);
-
-  const updateTaskStatus =
-    useCallback(async (task) => {
-      try {
-        const newStatus =
-          task.status === "Pending"
-            ? "Completed"
-            : "Pending";
-
-        const response = await fetch(
-          `http://localhost:5000/tasks/${task._id}`,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type":
-                "application/json",
-              Authorization:
-                localStorage.getItem(
-                  "token"
-                ),
-            },
-            body: JSON.stringify({
-              status: newStatus,
-            }),
-          }
+  // Add Task
+  const addTask =
+    useCallback(async () => {
+      if (
+        !title.trim() ||
+        !description.trim()
+      ) {
+        alert(
+          "Please fill all fields"
         );
+        return;
+      }
+
+      try {
+        const response =
+          await fetch(
+            "http://localhost:5000/tasks",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type":
+                  "application/json",
+                Authorization:
+                  localStorage.getItem(
+                    "token"
+                  )
+              },
+              body: JSON.stringify({
+                title,
+                description,
+                status
+              })
+            }
+          );
 
         const data =
           await response.json();
 
-        setTasks((prev) =>
-          prev.map((t) =>
-            t._id === task._id
-              ? data.task
-              : t
-          )
-        );
+        if (data.task) {
+          setTasks((prev) => [
+            data.task,
+            ...prev
+          ]);
+        }
+
+        setTitle("");
+        setDescription("");
+        setStatus("Pending");
       } catch (err) {
         console.log(err);
+        setError(
+          "Failed to add task"
+        );
       }
-    }, []);
+    }, [
+      title,
+      description,
+      status
+    ]);
 
-  const deleteTask =
-    useCallback(async (id) => {
-      try {
-        await fetch(
-          `http://localhost:5000/tasks/${id}`,
-          {
-            method: "DELETE",
-            headers: {
-              Authorization:
-                localStorage.getItem(
-                  "token"
-                ),
-            },
+  // Update Task
+  const updateTaskStatus =
+    useCallback(
+      async (task) => {
+        try {
+          const newStatus =
+            task.status ===
+            "Pending"
+              ? "Completed"
+              : "Pending";
+
+          const response =
+            await fetch(
+              `http://localhost:5000/tasks/${task._id}`,
+              {
+                method: "PUT",
+                headers: {
+                  "Content-Type":
+                    "application/json",
+                  Authorization:
+                    localStorage.getItem(
+                      "token"
+                    )
+                },
+                body: JSON.stringify({
+                  status:
+                    newStatus
+                })
+              }
+            );
+
+          const data =
+            await response.json();
+
+          if (data.task) {
+            setTasks((prev) =>
+              prev.map((t) =>
+                t._id ===
+                task._id
+                  ? data.task
+                  : t
+              )
+            );
           }
-        );
+        } catch (err) {
+          console.log(err);
+          setError(
+            "Failed to update task"
+          );
+        }
+      },
+      []
+    );
 
-        setTasks((prev) =>
-          prev.filter(
-            (task) =>
-              task._id !== id
-          )
-        );
-      } catch (err) {
-        console.log(err);
-      }
-    }, []);
+  // Delete Task
+  const deleteTask =
+    useCallback(
+      async (id) => {
+        try {
+          await fetch(
+            `http://localhost:5000/tasks/${id}`,
+            {
+              method:
+                "DELETE",
+              headers: {
+                Authorization:
+                  localStorage.getItem(
+                    "token"
+                  )
+              }
+            }
+          );
+
+          setTasks((prev) =>
+            prev.filter(
+              (task) =>
+                task._id !== id
+            )
+          );
+        } catch (err) {
+          console.log(err);
+          setError(
+            "Failed to delete task"
+          );
+        }
+      },
+      []
+    );
 
   return (
     <div className="dashboard">
@@ -217,7 +292,10 @@ function Tasks() {
 
         <p>Role: {role}</p>
 
-        {loading && <p>Loading...</p>}
+        {loading && (
+          <p>Loading...</p>
+        )}
+
         {error && <p>{error}</p>}
 
         <div className="taskForm">
@@ -270,38 +348,47 @@ function Tasks() {
             }
           />
 
-          <button onClick={addTask}>
+          <button
+            onClick={addTask}
+          >
             Add Task
           </button>
         </div>
 
         <div className="taskGrid">
           {!loading &&
-            tasks.length === 0 && (
+            tasks.length ===
+              0 && (
               <p>
                 No tasks found
               </p>
             )}
 
-          {tasks.map((task) => (
-            <TaskCard
-              key={task._id}
-              task={task}
-              updateTaskStatus={
-                updateTaskStatus
-              }
-              deleteTask={
-                deleteTask
-              }
-            />
-          ))}
+          {tasks.map(
+            (task) => (
+              <TaskCard
+                key={task._id}
+                task={task}
+                updateTaskStatus={
+                  updateTaskStatus
+                }
+                deleteTask={
+                  deleteTask
+                }
+              />
+            )
+          )}
         </div>
 
         <div className="pagination">
           <button
-            disabled={page === 1}
+            disabled={
+              page === 1
+            }
             onClick={() =>
-              setPage(page - 1)
+              setPage(
+                page - 1
+              )
             }
           >
             Previous
@@ -314,10 +401,13 @@ function Tasks() {
 
           <button
             disabled={
-              page === totalPages
+              page ===
+              totalPages
             }
             onClick={() =>
-              setPage(page + 1)
+              setPage(
+                page + 1
+              )
             }
           >
             Next
